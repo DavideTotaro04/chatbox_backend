@@ -26,10 +26,10 @@ export const login = async (req, res) => {
     if (!email || !password) return res.status(400).json({ message: "email e password richiesti" });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: "Credenziali errate" });
+    if (!user) return res.status(401).json({ message: "Email errata" });
 
     const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(401).json({ message: "Credenziali errate" });
+    if (!ok) return res.status(401).json({ message: "Password errata" });
 
     const accessToken = signAccessToken(user);
 
