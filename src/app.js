@@ -2,7 +2,9 @@ import express from "express";
 import cors from "cors";
 
 import authRoutes from "./routes/authRoutes.js";
-
+import groupRoutes from "./routes/groupRoutes.js";
+import dmRoutes from "./routes/dmRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 const app = express();
 
 /* MIDDLEWARE */
@@ -21,6 +23,9 @@ app.use(
 /* ROUTE */
 app.get("/health", (req, res) => res.status(200).json({ status: "OK" }));
 app.use("/auth", authRoutes);
+app.use("/api/groups", groupRoutes);
+app.use("/api/dm", dmRoutes);
+app.use("/api/messages", messageRoutes);
 
 /* ERROR HANDLER */
 app.use((err, req, res, next) => {
@@ -29,4 +34,3 @@ app.use((err, req, res, next) => {
 });
 
 export default app;
-
