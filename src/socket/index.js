@@ -61,8 +61,20 @@ export default function registerSocketHandlers(io) {
                     createdAt: new Date(),
                 });
 
-                // broadcast a tutti nella stanza (incluso mittente)
-                io.to(`${roomType}:${roomId}`).emit("message:new", msg);
+// POPULATE del sender (email)
+                await msg.populate("sender", "email", "username");
+
+                const payload = {
+                    ...msg.toObject(),
+                    sender: {
+                        _id: msg.sender._id,
+                        email: msg.sender.email,
+                        username: msg.sender.username
+                    },
+                };
+
+                io.to(`${roomType}:${roomId}`).emit("message:new", payload);
+
 
                 // ack al mittente (utile per mappare tempId -> msg._id)
                 return ack?.({ ok: true, id: msg._id, tempId });

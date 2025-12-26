@@ -30,9 +30,19 @@ export const getGroupMessages = async (req, res) => {
         ...cursorQuery,
     })
         .sort({ createdAt: -1 })
-        .limit(Math.min(Number(limit) || 30, 100));
+        .limit(Math.min(Number(limit) || 30, 100))
+        .populate("sender", "email")
+        .lean();
 
-    return res.json(msgs);
+// normalizza sender (opzionale ma consigliato)
+    const out = msgs.map((m) => ({
+        ...m,
+        sender: m.sender
+            ? { _id: m.sender._id, email: m.sender.email }
+            : m.sender,
+    }));
+
+    return res.json(out);
 };
 
 export const getDMMessages = async (req, res) => {
@@ -52,12 +62,23 @@ export const getDMMessages = async (req, res) => {
     if (cursor && !cursorQuery) return res.status(400).json({ message: "cursor non valido" });
 
     const msgs = await Message.find({
-        roomType: "dm",
-        roomId: conversationId,
+        roomType: "group",
+        roomId: groupId,
         ...cursorQuery,
     })
         .sort({ createdAt: -1 })
-        .limit(Math.min(Number(limit) || 30, 100));
+        .limit(Math.min(Number(limit) || 30, 100))
+        .populate("sender", "email")
+        .lean();
 
-    return res.json(msgs);
+// normalizza sender (opzionale ma consigliato)
+    const out = msgs.map((m) => ({
+        ...m,
+        sender: m.sender
+            ? { _id: m.sender._id, email: m.sender.email }
+            : m.sender,
+    }));
+
+    return res.json(out);
+
 };
