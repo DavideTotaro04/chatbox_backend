@@ -16,7 +16,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: process.env.CORS || "http://localhost:5174",
+        origin: process.env.CORS || "http://localhost:5173",
         methods: ["GET", "POST"],
         credentials: true,
     },
@@ -78,7 +78,12 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-    // permette di aggiornare token senza killare subito la socket
+    // ✅ "chiave di sessione" Socket.IO
+    console.log("[socket] connected", {
+        socketId: socket.id,
+        userId: socket.data.userId,
+    });
+
     socket.on("auth:refresh", (data, ack) => {
         try {
             const token = extractBearerToken(data?.token);
@@ -91,14 +96,25 @@ io.on("connection", (socket) => {
 
             scheduleExpiryDisconnect(socket, payload);
 
+            // ✅ log anche dopo refresh
+            console.log("[socket] refreshed", {
+                socketId: socket.id,
+                userId: socket.data.userId,
+            });
+
             return ack?.({ ok: true });
         } catch {
             return ack?.({ ok: false, error: "Token non valido" });
         }
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", (reason) => {
         if (socket.data.expTimer) clearTimeout(socket.data.expTimer);
+        console.log("[socket] disconnected", {
+            socketId: socket.id,
+            userId: socket.data.userId,
+            reason,
+        });
     });
 });
 

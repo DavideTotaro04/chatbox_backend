@@ -8,19 +8,14 @@ export default function registerSocketHandlers(io) {
         // join room
         socket.on("room:join", async ({ roomType, roomId }, ack) => {
             try {
-                if (!["group", "dm"].includes(roomType)) throw new Error("roomType non valido");
+                if (roomType !== "group") throw new Error("roomType non valido");
                 if (!mongoose.isValidObjectId(roomId)) throw new Error("roomId non valido");
 
-                const me = socket.user.sub;
+                const me = socket.data.userId;
 
                 if (roomType === "group") {
                     const ok = await GroupMember.findOne({ groupId: roomId, userId: me });
                     if (!ok) return ack?.({ ok: false, error: "Non sei membro del gruppo" });
-                } else {
-                    const conv = await Conversation.findById(roomId).lean();
-                    if (!conv) return ack?.({ ok: false, error: "Conversazione non trovata" });
-                    const allowed = conv.participants.map(String).includes(String(me));
-                    if (!allowed) return ack?.({ ok: false, error: "Non autorizzato" });
                 }
 
                 socket.join(`${roomType}:${roomId}`);
@@ -33,9 +28,9 @@ export default function registerSocketHandlers(io) {
         // send message
         socket.on("message:send", async ({ roomType, roomId, text, tempId }, ack) => {
             try {
-                const me = socket.user.sub;
+                const me = socket.data.userId;
 
-                if (!["group", "dm"].includes(roomType)) throw new Error("roomType non valido");
+                if (roomType !== "group") throw new Error("roomType non valido");
                 if (!mongoose.isValidObjectId(roomId)) throw new Error("roomId non valido");
 
                 const cleanText = (text ?? "").trim();
@@ -45,13 +40,7 @@ export default function registerSocketHandlers(io) {
                 if (roomType === "group") {
                     const ok = await GroupMember.findOne({ groupId: roomId, userId: me });
                     if (!ok) throw new Error("Non sei membro del gruppo");
-                } else {
-                    const conv = await Conversation.findById(roomId).lean();
-                    if (!conv) throw new Error("Conversazione non trovata");
-                    const allowed = conv.participants.map(String).includes(String(me));
-                    if (!allowed) throw new Error("Non autorizzato");
                 }
-
                 const msg = await Message.create({
                     type: "text",
                     text: cleanText,
@@ -62,7 +51,7 @@ export default function registerSocketHandlers(io) {
                 });
 
 // POPULATE del sender (email)
-                await msg.populate("sender", "email", "username");
+                await msg.populate("sender", "email username");
 
                 const payload = {
                     ...msg.toObject(),

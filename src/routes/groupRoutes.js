@@ -6,6 +6,10 @@ import {
     listMyGroups,
     joinGroup,
     leaveGroup,
+    addMemberByEmail,
+    myGroupRole,
+    getGroupById,
+    deleteGroup
 } from "../controllers/groupControllers.js";
 
 const router = Router();
@@ -17,6 +21,10 @@ router.get("/", listPublicGroups);
 router.get("/me", listMyGroups);
 router.post("/:id/join", joinGroup);
 router.post("/:id/leave", leaveGroup);
+router.post("/:groupId/members", addMemberByEmail);
+router.get("/:groupId/me", myGroupRole);
+router.get("/:id", getGroupById);
+router.delete("/:id", deleteGroup);
 
 export default router;
 

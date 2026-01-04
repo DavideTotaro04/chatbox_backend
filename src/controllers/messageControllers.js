@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import Message from "../models/messageModels.js";
 import GroupMember from "../models/groupmembersModels.js";
-import Conversation from "../models/conversationModels.js";
 
 // cursor pagination: createdAt < cursor
 const buildCursorQuery = (cursor) => {
@@ -31,54 +30,58 @@ export const getGroupMessages = async (req, res) => {
     })
         .sort({ createdAt: -1 })
         .limit(Math.min(Number(limit) || 30, 100))
-        .populate("sender", "email")
+        .populate("sender", "email username")
         .lean();
 
 // normalizza sender (opzionale ma consigliato)
     const out = msgs.map((m) => ({
         ...m,
         sender: m.sender
-            ? { _id: m.sender._id, email: m.sender.email }
+            ? {
+                _id: m.sender._id,
+                email: m.sender.email,
+                username: m.sender.username, // ✅ AGGIUNTO
+            }
             : m.sender,
     }));
 
     return res.json(out);
 };
 
-export const getDMMessages = async (req, res) => {
-    const me = req.user.sub;
-    const { conversationId } = req.params;
-    const { cursor, limit = 30 } = req.query;
+export const deleteMessage = async (req, res) => {
+    try {
+        const me = req.user.sub;
+        const { messageId } = req.params;
 
-    if (!mongoose.isValidObjectId(conversationId)) return res.status(400).json({ message: "conversationId non valido" });
+        if (!mongoose.isValidObjectId(messageId)) {
+            return res.status(400).json({ message: "messageId non valido" });
+        }
 
-    const conv = await Conversation.findById(conversationId).lean();
-    if (!conv) return res.status(404).json({ message: "Conversazione non trovata" });
+        const msg = await Message.findById(messageId).lean();
+        if (!msg) return res.status(404).json({ message: "Messaggio non trovato" });
 
-    const allowed = conv.participants.map(String).includes(String(me));
-    if (!allowed) return res.status(403).json({ message: "Non autorizzato" });
+        // solo gruppi (coerente con “niente DM”)
+        if (msg.roomType !== "group") {
+            return res.status(400).json({ message: "roomType non supportato" });
+        }
 
-    const cursorQuery = buildCursorQuery(cursor);
-    if (cursor && !cursorQuery) return res.status(400).json({ message: "cursor non valido" });
+        const isOwner = String(msg.sender) === String(me);
 
-    const msgs = await Message.find({
-        roomType: "group",
-        roomId: groupId,
-        ...cursorQuery,
-    })
-        .sort({ createdAt: -1 })
-        .limit(Math.min(Number(limit) || 30, 100))
-        .populate("sender", "email")
-        .lean();
+        const admin = await GroupMember.findOne({
+            groupId: msg.roomId,
+            userId: me,
+            role: "admin",
+        }).lean();
 
-// normalizza sender (opzionale ma consigliato)
-    const out = msgs.map((m) => ({
-        ...m,
-        sender: m.sender
-            ? { _id: m.sender._id, email: m.sender.email }
-            : m.sender,
-    }));
+        if (!isOwner && !admin) {
+            return res.status(403).json({ message: "Non autorizzato" });
+        }
 
-    return res.json(out);
+        await Message.deleteOne({ _id: messageId });
 
+        return res.json({ ok: true, id: messageId });
+    } catch {
+        return res.status(500).json({ message: "Errore server" });
+    }
 };
+
