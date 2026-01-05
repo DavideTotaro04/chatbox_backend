@@ -1,7 +1,6 @@
 import { Router } from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
-import { getGroupMessages} from "../controllers/messageControllers.js";
-import { deleteMessage } from "../controllers/messageControllers.js";
+import { getGroupMessages, deleteMessage} from "../controllers/messageControllers.js";
 
 const router = Router();
 
