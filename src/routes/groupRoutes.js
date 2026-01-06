@@ -14,8 +14,10 @@ import {
 
 const router = Router();
 
+// rotta di autenticazione per tutte le rotte
 router.use(authMiddleware);
 
+// rotte per la gestione dei gruppi
 router.post("/", createGroup);
 router.get("/", listPublicGroups);
 router.get("/me", listMyGroups);

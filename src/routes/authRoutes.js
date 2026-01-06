@@ -4,6 +4,7 @@ import { register, login, refresh, logout } from "../controllers/authControllers
 
 const router = Router();
 
+// rotte di autenticazione
 router.post("/register", register);
 router.post("/login", login);
 router.post("/refresh", refresh);

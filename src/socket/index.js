@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import Message from "../models/messageModels.js";
 import GroupMember from "../models/groupmembersModels.js";
-import Conversation from "../models/conversationModels.js";
 
+// registra gli handler per i socket
 export default function registerSocketHandlers(io) {
     io.on("connection", (socket) => {
         // join room
@@ -25,7 +25,7 @@ export default function registerSocketHandlers(io) {
             }
         });
 
-        // send message
+        // invio messaggio
         socket.on("message:send", async ({ roomType, roomId, text, tempId }, ack) => {
             try {
                 const me = socket.data.userId;
@@ -50,7 +50,7 @@ export default function registerSocketHandlers(io) {
                     createdAt: new Date(),
                 });
 
-// POPULATE del sender (email)
+                // POPULATE del sender (email)
                 await msg.populate("sender", "email username");
 
                 const payload = {

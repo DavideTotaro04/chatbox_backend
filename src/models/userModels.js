@@ -1,6 +1,7 @@
 // src/models/userModels.js
 import mongoose from "mongoose";
 
+// schema utente
 const userSchema = new mongoose.Schema(
     {
         email: {
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema(
         },
         role: { type: String, default: "user" },
 
-        // refresh token: salviamo HASH, non il token in chiaro
+        // refresh token: salviamo l'hash del token
         refreshTokenHash: { type: String, default: null },
     },
     { timestamps: true }

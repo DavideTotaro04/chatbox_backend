@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Modello per la membership di un utente in un gruppo
 const groupMemberSchema = new mongoose.Schema(
     {
         groupId: { type: mongoose.Schema.Types.ObjectId, ref: "Group", required: true },

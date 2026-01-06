@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Modello per i gruppi di chat
 const groupSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true, maxlength: 60 },

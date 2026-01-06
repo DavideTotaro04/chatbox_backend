@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
+// Modello per i messaggi
 const messageSchema = new mongoose.Schema(
     {
         type: { type: String, enum: ["text", "image"], default: "text" },
 
-        // testo (per ora usi solo questo)
+        // testo
         text: {
             type: String,
             trim: true,
@@ -35,7 +36,7 @@ const messageSchema = new mongoose.Schema(
 // Storico: fetch ultimi messaggi per stanza, ordinati per tempo
 messageSchema.index({ roomType: 1, roomId: 1, createdAt: -1 });
 
-// Per query utente (opzionale)
+// Per query utente
 messageSchema.index({ sender: 1, createdAt: -1 });
 
 export default mongoose.model("Message", messageSchema);

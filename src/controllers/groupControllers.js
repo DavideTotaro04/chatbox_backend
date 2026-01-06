@@ -4,7 +4,7 @@ import GroupMember from "../models/groupmembersModels.js";
 import User from "../models/userModels.js";
 import Message from "../models/messageModels.js";
 
-
+// crea un nuovo gruppo
 export const createGroup = async (req, res) => {
     const owner = req.user.sub;
     const { name, isPublic = true } = req.body;
@@ -19,6 +19,7 @@ export const createGroup = async (req, res) => {
     return res.status(201).json(group);
 };
 
+// lista gruppi pubblici
 export const listPublicGroups = async (req, res) => {
     const groups = await Group.find({ isPublic: true })
         .sort({ createdAt: -1 })
@@ -28,6 +29,7 @@ export const listPublicGroups = async (req, res) => {
     return res.json(groups);
 };
 
+// lista gruppi di cui sono membro
 export const listMyGroups = async (req, res) => {
     const me = req.user.sub;
 
@@ -49,6 +51,7 @@ export const listMyGroups = async (req, res) => {
     return res.json(groups);
 };
 
+// unisciti a un gruppo pubblico
 export const joinGroup = async (req, res) => {
     const me = req.user.sub;
     const { id: groupId } = req.params;
@@ -68,6 +71,7 @@ export const joinGroup = async (req, res) => {
     return res.status(200).json({ message: "Joined" });
 };
 
+// lascia un gruppo
 export const leaveGroup = async (req, res) => {
     const me = req.user.sub;
     const { id: groupId } = req.params;
@@ -79,6 +83,7 @@ export const leaveGroup = async (req, res) => {
     return res.status(200).json({ message: "Left" });
 };
 
+// aggiungi membro a un gruppo via email (solo admin)
 export const addMemberByEmail = async (req, res) => {
     try {
         const me = req.user.sub;              // id utente loggato (dal JWT)
@@ -112,7 +117,7 @@ export const addMemberByEmail = async (req, res) => {
             return res.status(404).json({ message: "Utente non trovato" });
         }
 
-        // 3) se già membro -> errore
+        // 3) se già membro: errore
         const exists = await GroupMember.findOne({
             groupId,
             userId: user._id,
@@ -138,6 +143,7 @@ export const addMemberByEmail = async (req, res) => {
     }
 };
 
+// ottieni il mio ruolo in un gruppo
 export const myGroupRole = async (req, res) => {
     const me = req.user.sub;
     const { groupId } = req.params;
@@ -152,6 +158,7 @@ export const myGroupRole = async (req, res) => {
     return res.json({ role: membership.role }); // "admin" | "member"
 };
 
+// ottieni i dettagli di un gruppo per ID
 export const getGroupById = async (req, res) => {
     const { id } = req.params;
 
@@ -165,6 +172,7 @@ export const getGroupById = async (req, res) => {
     return res.json(group);
 };
 
+// elimina un gruppo (solo owner)
 export const deleteGroup = async (req, res) => {
     const me = req.user.sub;
     const { id } = req.params;
@@ -173,6 +181,7 @@ export const deleteGroup = async (req, res) => {
         return res.status(400).json({ message: "groupId non valido" });
     }
 
+    // verifica che io sia l'owner del gruppo
     const group = await Group.findById(id);
     if (!group) return res.status(404).json({ message: "Gruppo non trovato" });
 
@@ -180,7 +189,7 @@ export const deleteGroup = async (req, res) => {
         return res.status(403).json({ message: "Solo il creatore può eliminare il gruppo" });
     }
 
-    // pulizia minima coerente col tuo progetto
+    // elimina tutte le membership e i messaggi associati quando elimino il gruppo
     await GroupMember.deleteMany({ groupId: id });
     await Message.deleteMany({ roomType: "group", roomId: id });
     await Group.deleteOne({ _id: id });
