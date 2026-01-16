@@ -15,18 +15,10 @@ const messageSchema = new mongoose.Schema(
             },
         },
 
-        // per futuro invio foto
-        imageUrl: {
-            type: String,
-            required: function () {
-                return this.type === "image";
-            },
-        },
-
         sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
-        roomType: { type: String, enum: ["dm", "group"], required: true },
-        roomId: { type: mongoose.Schema.Types.ObjectId, required: true }, // Conversation._id o Group._id
+        roomType: { type: String, enum: ["group"], required: true },
+        roomId: { type: mongoose.Schema.Types.ObjectId, required: true },
 
         createdAt: { type: Date, default: Date.now },
     },

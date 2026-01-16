@@ -1,4 +1,3 @@
-// src/server.js
 import http from "http";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
@@ -20,7 +19,6 @@ const io = new Server(server, {
         methods: ["GET", "POST"],
         credentials: true,
     },
-    // opzionali ma utili
     pingInterval: 25000,
     pingTimeout: 20000,
 });
@@ -62,8 +60,7 @@ function scheduleExpiryDisconnect(socket, payload) {
 io.use((socket, next) => {
     try {
         const token =
-            extractBearerToken(socket.handshake?.auth?.token) ||
-            extractBearerToken(socket.handshake?.headers?.authorization);
+            extractBearerToken(socket.handshake?.auth?.token) || extractBearerToken(socket.handshake?.headers?.authorization);
 
         if (!token) return next(new Error("Auth token missing"));
 

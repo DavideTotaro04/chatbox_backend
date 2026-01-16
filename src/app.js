@@ -1,12 +1,11 @@
 import express from "express";
 import cors from "cors";
-
 import authRoutes from "./routes/authRoutes.js";
 import groupRoutes from "./routes/groupRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 const app = express();
 
-/* MIDDLEWARE */
+// MIDDLEWARE
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -19,13 +18,19 @@ app.use(
     })
 );
 
-/* ROUTE */
-app.get("/health", (req, res) => res.status(200).json({ status: "OK" }));
+// ROUTE
 app.use("/auth", authRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/messages", messageRoutes);
+app.get("/health", (req, res) => res.status(200).json({ status: "OK" }));
+app.get('/', (req, res) => res.send('backend funzionante'));
 
-/* ERROR HANDLER */
+// 404 (nessuna rotta ha risposto)
+app.use((req, res) => {
+    res.status(404).json({ message: "Rotta non trovata" });
+});
+
+// ERROR HANDLER
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: "Errore interno del server" });

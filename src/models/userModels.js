@@ -1,4 +1,3 @@
-// src/models/userModels.js
 import mongoose from "mongoose";
 
 // schema utente

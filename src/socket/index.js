@@ -41,6 +41,7 @@ export default function registerSocketHandlers(io) {
                     const ok = await GroupMember.findOne({ groupId: roomId, userId: me });
                     if (!ok) throw new Error("Non sei membro del gruppo");
                 }
+                // crea messaggio
                 const msg = await Message.create({
                     type: "text",
                     text: cleanText,

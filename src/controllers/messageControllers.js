@@ -45,7 +45,7 @@ export const getGroupMessages = async (req, res) => {
             ? {
                 _id: m.sender._id,
                 email: m.sender.email,
-                username: m.sender.username, // ✅ AGGIUNTO
+                username: m.sender.username,
             }
             : m.sender,
     }));
